@@ -97,7 +97,7 @@ BQ.apps.then(function(list){
   }).catch(function(){});
   if(!a.repo)return;
   BQ.stats(a.repo).then(function(s){
-    var t='';if(a.source&&s.stars)t+='<span>★ <b>'+BQ.fmt(s.stars)+'</b></span>';if(s.downloads)t+='<span>↓ <b>'+BQ.fmt(s.downloads)+'</b> downloads</span>';
+    var t='';if(s.stars)t+='<span>★ <b>'+BQ.fmt(s.stars)+'</b></span>';if(s.downloads)t+='<span>↓ <b>'+BQ.fmt(s.downloads)+'</b> downloads</span>';
     document.getElementById('st').innerHTML=t;
     if(!a.license&&s.license){
       tg.insertAdjacentHTML('beforeend',licTag(s.license));
