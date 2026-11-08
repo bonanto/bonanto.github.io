@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Version History · Bonanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<main><div class="wrap" id="app"></div></main>
+<script src="/assets/site.js"></script>
+<script>
+var id=BQ.route().app,root=document.getElementById('app');
+BQ.apps.then(function(list){
+  var a=list.filter(function(x){return x.id===id&&x.repo&&x.status!=='soon'})[0];
+  if(!a){root.innerHTML='<div class="panel" style="margin-top:64px"><h2>App not found</h2><p><a href="/software.html" class="btn sm">All software</a></p></div>';return}
+  document.title='Version History · '+a.name;
+  root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / <a href="'+BQ.u.app(a.id)+'">'+BQ.esc(a.name)+'</a> / Version History</div>'
+    +'<div class="hero" style="padding:20px 0 24px"><h1 style="margin:0">'+BQ.esc(a.name)+' <em>versions</em></h1></div><div class="panel"><div id="rels">Loading releases...</div></div>';
+  BQ.rel(a.repo).then(function(rs){
+    rs=BQ.stable(rs);var box=document.getElementById('rels');
+    if(!rs.length){box.textContent='No releases published yet.';return}
+    Promise.all(rs.map(function(r){return BQ.render(r.body||'',{id:a.id,repo:a.repo,src:{ref:'HEAD'}})})).then(function(bodies){
+      box.innerHTML=rs.map(function(r,i){
+        var as=(r.assets||[]).map(function(x){return '<a class="btn sm primary" href="'+BQ.esc(x.browser_download_url)+'">↓ '+BQ.esc(x.name)+' ('+BQ.size(x.size)+')</a>'}).join('');
+        if(a.source)as+='<a class="btn sm" href="https://github.com/'+a.repo+'/archive/refs/tags/'+encodeURIComponent(r.tag_name)+'.zip">Source (.zip)</a><a class="btn sm" href="https://github.com/'+a.repo+'/archive/refs/tags/'+encodeURIComponent(r.tag_name)+'.tar.gz">Source (.tar.gz)</a>';
+        return '<article class="rel"><div class="rh"><h3>'+BQ.esc(r.name||r.tag_name)+'</h3>'+(i?'':'<span class="tag k">Latest</span>')+'<time>'+BQ.date(r.published_at)+'</time></div>'
+          +'<details><summary>Changelog</summary><div class="doc" style="padding:10px 0">'+(bodies[i]||'<p>No description provided.</p>')+'</div></details>'
+          +'<div class="assets">'+(as||'<span class="tag">No downloads attached</span>')+'</div></article>';
+      }).join('');
+    });
+  }).catch(function(){document.getElementById('rels').innerHTML='Could not load releases. <a href="https://github.com/'+a.repo+'/releases" style="text-decoration:underline">View on GitHub</a>.'});
+});
+</script>
+</body>
+</html>

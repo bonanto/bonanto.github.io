@@ -1,27 +1,126 @@
-{"apps":[
-{"id":"smtt","name":"SM Type Test","mark":"SM","icon":"smtt.png","category":"Typing & Exams","featured":true,
- "tagline":"Typing exam simulator for Windows with WBPSC marking rules.",
- "about":["SM Type Test simulates typing examinations with WBPSC marking rules, keystroke tracking and custom scoring."],
- "platforms":["Windows"],"price":"Free","license":"","repo":"bonanto/smtt","asset":"","source":false,
- "src":{"ref":"gh-pages","index":"index.md"},
- "languages":[],"store":"","hideDocs":["privacy"],
- "data":["Works offline","Results stored on your device","No ads"],
- "links":[{"label":"Privacy policy","href":"/doc.html?app=smtt&doc=privacy"}]},
-{"id":"smencoder","name":"SM Encoder","mark":"SM","icon":"smencoder.png","category":"Utilities","status":"soon",
- "tagline":"The next addition to the SM family. In active development.","platforms":[],"data":[]},
-{"id":"bark","name":"Bark","mark":"Bk","icon":"bark.png","category":"Utilities","featured":true,
- "tagline":"Stops Windows from resetting your System sounds volume.",
- "about":["Bark keeps the Windows System sounds volume at the level you set, with global hotkeys and tray notifications."],
- "platforms":["Windows"],"price":"Free","license":"Open source (GPLv3)","repo":"bonanto/bark","asset":"","source":true,
- "languages":[],"store":"",
- "data":["Works offline"],"links":[]},
-{"id":"rabiraag","name":"Rabiraag","mark":"Ra","icon":"rabiraag.png","category":"Keyboards & Input",
- "tagline":"Phonetic Bengali keyboard layout for Windows 7 to 11.",
- "url":"https://bonanto.github.io/rabiraag/","platforms":["Windows"],"price":"Free","repo":"bonanto/rabiraag","data":[]},
-{"id":"saswati","name":"Saswati Keyboard","mark":"Sa","icon":"saswati.png","category":"Keyboards & Input","featured":true,
- "tagline":"Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions.",
- "about":["Saswati Keyboard is an IBus input method engine for Bengali typing on Linux."],
- "platforms":["Linux"],"price":"Free","license":"","repo":"bonanto/saswati-keyboard","asset":"","source":true,
- "languages":[],"store":"",
- "data":["Works offline"],"links":[]}
-]}
+{
+ "apps": [
+  {
+   "id": "smtt",
+   "name": "SM Type Test",
+   "mark": "SM",
+   "icon": "smtt.png",
+   "category": "Typing & Exams",
+   "featured": true,
+   "tagline": "A free, fully offline typing practice and evaluation app for general typing and Indian government exams, for Windows.",
+   "about": [
+    "SM Type Test simulates typing examinations with WBPSC marking rules, keystroke tracking and custom scoring."
+   ],
+   "platforms": [
+    "Windows"
+   ],
+   "price": "Free",
+   "license": "Proprietary",
+   "repo": "bonanto/smtt",
+   "asset": "",
+   "source": false,
+   "src": {
+    "ref": "gh-pages"
+   },
+   "languages": [],
+   "store": "",
+   "hideDocs": [
+    "privacy"
+   ],
+   "data": [
+    "Works offline",
+    "Results stored on your device",
+    "No ads"
+   ],
+   "links": [
+    {
+     "label": "Privacy policy",
+     "href": "/apps/smtt/privacy/"
+    }
+   ],
+   "readme": {
+    "ref": "HEAD",
+    "path": "README.md"
+   }
+  },
+  {
+   "id": "smencoder",
+   "name": "SM Encoder",
+   "mark": "SM",
+   "icon": "smencoder.png",
+   "category": "Utilities",
+   "status": "soon",
+   "tagline": "The next addition to the SM family. In active development.",
+   "platforms": [],
+   "data": []
+  },
+  {
+   "id": "bark",
+   "name": "Bark",
+   "mark": "Bk",
+   "icon": "bark.png",
+   "category": "Utilities",
+   "featured": true,
+   "tagline": "Stops Windows from resetting your System sounds volume.",
+   "about": [
+    "Bark keeps the Windows System sounds volume at the level you set, with global hotkeys and tray notifications."
+   ],
+   "platforms": [
+    "Windows"
+   ],
+   "price": "Free",
+   "license": "Open source (GPLv3)",
+   "repo": "bonanto/bark",
+   "asset": "",
+   "source": true,
+   "languages": [],
+   "store": "",
+   "data": [
+    "Works offline"
+   ],
+   "links": []
+  },
+  {
+   "id": "rabiraag",
+   "name": "Rabiraag",
+   "mark": "Ra",
+   "icon": "rabiraag.png",
+   "category": "Keyboards & Input",
+   "tagline": "Phonetic Bengali keyboard layout for Windows 7 to 11.",
+   "url": "https://bonanto.github.io/rabiraag/",
+   "platforms": [
+    "Windows"
+   ],
+   "price": "Free",
+   "repo": "bonanto/rabiraag",
+   "data": []
+  },
+  {
+   "id": "saswati",
+   "name": "Saswati Keyboard",
+   "mark": "Sa",
+   "icon": "saswati.png",
+   "category": "Keyboards & Input",
+   "featured": true,
+   "tagline": "Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions.",
+   "about": [
+    "Saswati Keyboard is an IBus input method engine for Bengali typing on Linux."
+   ],
+   "platforms": [
+    "Linux"
+   ],
+   "price": "Free",
+   "license": "",
+   "repo": "bonanto/saswati-keyboard",
+   "asset": "",
+   "source": true,
+   "languages": [],
+   "store": "",
+   "data": [
+    "Works offline"
+   ],
+   "links": [],
+   "keepImages": true
+  }
+ ]
+}

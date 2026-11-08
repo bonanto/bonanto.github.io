@@ -12,18 +12,20 @@
 <main><div class="wrap" id="app"></div></main>
 <script src="/assets/site.js"></script>
 <script>
-var id=new URLSearchParams(location.search).get('app'),root=document.getElementById('app');
+var id=BQ.route().app,root=document.getElementById('app');
 BQ.apps.then(function(list){
   var a=list.filter(function(x){return x.id===id&&x.status!=='soon'})[0];
   if(!a){root.innerHTML='<div class="panel" style="margin-top:64px"><h2>App not found</h2><p><a href="/software.html" class="btn sm">All software</a></p></div>';return}
   document.title=a.name+' · Bonanto';
-  var tags=(a.price?'<span class="tag k">'+BQ.esc(a.price)+'</span>':'')+(a.license?'<span class="tag">'+BQ.esc(a.license)+'</span>':'')
-    +(a.platforms||[]).map(function(p){return '<span class="tag">'+BQ.esc(p)+'</span>'}).join('');
-  var btns=(a.repo?'<a class="btn primary" id="dl" href="https://github.com/'+a.repo+'/releases/latest">Download Latest Version</a><a class="btn" href="/versions.html?app='+a.id+'">Version History</a>':'')
+  var licUrl=BQ.u.doc(a.id,'license');
+  function licTag(t){return '<a class="tag" title="View licence" href="'+licUrl+'">Licence: '+BQ.esc(t)+'</a>'}
+  var tags=(a.price?'<span class="tag k">'+BQ.esc(a.price)+'</span>':'')
+    +(a.platforms||[]).map(function(p){return '<span class="tag">'+BQ.esc(p)+'</span>'}).join('')+(a.license?licTag(a.license):'');
+  var btns=(a.repo?'<a class="btn primary" id="dl" href="https://github.com/'+a.repo+'/releases/latest">Download Latest Version</a><a class="btn" href="'+BQ.u.ver(a.id)+'">Version History</a>':'')
     +(a.store?'<a class="btn" href="'+BQ.esc(a.store)+'">Microsoft Store</a>':'')
     +(a.links||[]).map(function(l){return '<a class="btn" href="'+BQ.esc(l.href)+'">'+BQ.esc(l.label)+'</a>'}).join('');
   root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / '+BQ.esc(a.name)+'</div>'
-    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags">'+tags+'</div></div></div>'
+    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags" id="tg">'+tags+'</div></div></div>'
     +'<div class="btns" style="margin-bottom:28px;align-items:center">'+btns+'<div class="stats" id="st"></div></div>'
     +'<div class="shots" id="shots" hidden></div><div class="panel doc" id="about" hidden></div>'
     +(a.data&&a.data.length?'<div class="panel"><h2>Data and privacy</h2><ul class="chk">'+a.data.map(function(d){return '<li>'+BQ.esc(d)+'</li>'}).join('')+'</ul></div>':'')
@@ -31,32 +33,35 @@ BQ.apps.then(function(list){
     +'<div class="panel"><h2>Details</h2><dl>'
     +'<dt>Platforms</dt><dd>'+BQ.esc((a.platforms||[]).join(', ')||'-')+'</dd>'
     +'<dt>Price</dt><dd>'+BQ.esc(a.price||'-')+'</dd>'
-    +(a.license?'<dt>Licence</dt><dd>'+BQ.esc(a.license)+'</dd>':'')
+    +'<dt>Licence</dt><dd id="lic2">'+(a.license?'<a href="'+licUrl+'" style="text-decoration:underline">'+BQ.esc(a.license)+'</a>':'-')+'</dd>'
     +'<dt>Languages</dt><dd id="lang">'+BQ.esc((a.languages||[]).join(', ')||'-')+'</dd>'
     +'<dt>Latest version</dt><dd id="ver">-</dd><dt>Released</dt><dd id="rd">-</dd>'
     +(a.source?'<dt>Source code</dt><dd><a href="https://github.com/'+a.repo+'" style="text-decoration:underline">github.com/'+a.repo+'</a></dd>':'')
     +'</dl></div>';
-  var about=document.getElementById('about');
-  function fallback(){if(a.about&&a.about.length){about.className='panel doc';about.innerHTML='<h2>About</h2>'+a.about.map(function(p){return '<p>'+BQ.esc(p)+'</p>'}).join('');about.hidden=false}}
+  var about=document.getElementById('about'),tg=document.getElementById('tg');
+
+  function fallback(){if(a.about&&a.about.length){about.innerHTML='<h2>About</h2>'+a.about.map(function(p){return '<p>'+BQ.esc(p)+'</p>'}).join('');about.hidden=false}}
   function gallery(){
-    var s=BQ.src(a),raw='https://raw.githubusercontent.com/'+s.repo+'/'+s.ref+'/'+s.dir;
-    if(a.screenshots&&a.screenshots.length)return Promise.resolve(a.screenshots.map(function(u){return /^https?:/.test(u)?u:raw+u.replace(/^\.?\//,'')}));
-    var imgs=[].slice.call(about.querySelectorAll('img')).filter(function(i){return !/shields\.io|badge|\.svg(\?|$)|workflows/i.test(i.src)});
-    return Promise.all(imgs.map(function(i){return new Promise(function(res){var m=new Image();m.onload=function(){res({i:i,w:m.naturalWidth,h:m.naturalHeight})};m.onerror=function(){res(null)};m.src=i.src})})).then(function(r){
-      var keep=[];
-      r.forEach(function(x){
-        if(!x)return;
-        var sq=Math.abs(x.w/x.h-1)<.1&&x.w<=700;
-        if(sq||x.w>=300){(x.i.closest('a')||x.i).remove()}
-        if(!sq&&x.w>=300)keep.push(x.i.src);
-      });
-      about.querySelectorAll('p,div,a').forEach(function(e){if(!e.textContent.trim()&&!e.querySelector('img'))e.remove()});
-      return keep;
+    if(a.screenshots&&a.screenshots.length){
+      var s=BQ.src(a,'readme'),raw='https://raw.githubusercontent.com/'+s.repo+'/'+s.ref+'/'+s.dir;
+      return a.screenshots.map(function(u){return{u:/^https?:/.test(u)?u:raw+u.replace(/^\.?\//,''),c:''}});
+    }
+    var out=[];
+    about.querySelectorAll('img').forEach(function(i){
+      var fc=i.closest('figure')&&i.closest('figure').querySelector('figcaption');
+      out.push({u:i.src,c:fc?fc.innerText:(i.alt||''),el:i});
     });
+    if(!a.keepImages){
+      out.forEach(function(x){var f=x.el.closest('figure');(x.el.closest('a')||x.el).remove();if(f&&!f.querySelector('img'))f.remove()});
+      for(var k=0;k<3;k++)about.querySelectorAll('p,div,a,figure,span').forEach(function(e){if(!e.textContent.trim()&&!e.querySelector('img,video,iframe,svg'))e.remove()});
+    }
+    return out;
   }
   function shots(list){
     var box=document.getElementById('shots');
-    box.innerHTML='<button class="nav l" aria-label="Previous">‹</button><div class="track">'+list.map(function(u){return '<img src="'+BQ.esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer">'}).join('')+'</div><button class="nav r" aria-label="Next">›</button>';
+    box.innerHTML='<button class="nav l" aria-label="Previous">‹</button><div class="track">'+list.map(function(x){
+      return '<figure><img src="'+BQ.esc(x.u)+'" alt="'+BQ.esc(x.c)+'" referrerpolicy="no-referrer">'+(x.c?'<figcaption>'+BQ.esc(x.c)+'</figcaption>':'')+'</figure>';
+    }).join('')+'</div><button class="nav r" aria-label="Next">›</button>';
     var tr=box.querySelector('.track');
     box.querySelector('.l').onclick=function(){tr.scrollBy({left:-tr.clientWidth*.8,behavior:'smooth'})};
     box.querySelector('.r').onclick=function(){tr.scrollBy({left:tr.clientWidth*.8,behavior:'smooth'})};
@@ -67,30 +72,33 @@ BQ.apps.then(function(list){
     };
     box.hidden=false;
   }
-  if(a.repo)BQ.readme(a).then(function(md){return BQ.render(md,a)}).then(function(h){
-    about.innerHTML=h;var h1=about.querySelector('h1');if(h1)h1.remove();about.hidden=false;
-    return gallery();
-  }).then(function(list){
-    if(list&&list.length)shots(list);
-    if(!about.textContent.trim())about.hidden=true;
+  if(a.repo)BQ.readme(a).then(function(md){return BQ.render(md,a,{k:'readme',readme:true})}).then(function(h){
+    about.innerHTML=h;about.hidden=false;
+    var l=gallery();if(l.length)shots(l);
+    if(!about.textContent.trim()&&!about.querySelector('img'))about.hidden=true;
   }).catch(fallback);else fallback();
   if(a.repo)BQ.docs(a).then(function(d){
     if(!d.length)return;
-    document.getElementById('dlist').innerHTML=d.map(function(x){return '<a class="btn sm" href="/doc.html?app='+a.id+'&doc='+encodeURIComponent(x.path)+'">'+BQ.esc(x.label)+'</a>'}).join('');
+    document.getElementById('dlist').innerHTML=d.map(function(x){return '<a class="btn sm" href="'+BQ.u.doc(a.id,x.path)+'">'+BQ.esc(x.label)+'</a>'}).join('');
     document.getElementById('docs').hidden=false;
   }).catch(function(){});
   if(!a.repo)return;
   BQ.stats(a.repo).then(function(s){
     var t='';if(a.source&&s.stars)t+='<span>★ <b>'+BQ.fmt(s.stars)+'</b></span>';if(s.downloads)t+='<span>↓ <b>'+BQ.fmt(s.downloads)+'</b> downloads</span>';
     document.getElementById('st').innerHTML=t;
+    if(!a.license&&s.license){
+      tg.insertAdjacentHTML('beforeend',licTag(s.license));
+      document.getElementById('lic2').innerHTML='<a href="'+licUrl+'" style="text-decoration:underline">'+BQ.esc(s.license)+'</a>';
+    }
   }).catch(function(){});
   BQ.rel(a.repo).then(function(rs){
     rs=BQ.stable(rs);if(!rs.length)return;
-    var r=rs[0],as=r.assets||[],pick=(a.asset&&as.filter(function(x){return x.name.indexOf(a.asset)>-1})[0])||as[0],dl=document.getElementById('dl');
+    var r=rs[0],as=r.assets||[],pick=(a.asset&&as.filter(function(x){return x.name.indexOf(a.asset)>-1})[0])||as[0],dl=document.getElementById('dl'),v=BQ.ver(r.tag_name),b=BQ.build(r.tag_name);
     if(pick)dl.href=pick.browser_download_url;
-    dl.textContent='Download Latest Version ('+BQ.ver(r.tag_name)+')';
-    document.getElementById('ver').textContent=BQ.ver(r.tag_name);
+    dl.textContent='Download Latest Version ('+v+')';
+    document.getElementById('ver').textContent=v+(b?' (build '+b+')':'');
     document.getElementById('rd').textContent=BQ.date(r.published_at);
+    tg.insertAdjacentHTML('beforeend','<a class="tag" title="Version history" href="'+BQ.u.ver(a.id)+'">v'+BQ.esc(v)+'</a>'+(b?'<span class="tag">Build '+BQ.esc(b)+'</span>':''));
   }).catch(function(){});
   if(!(a.languages&&a.languages.length))BQ.cached('https://api.github.com/repos/'+a.repo+'/languages',864e5).then(function(l){
     var tot=0,k;for(k in l)tot+=l[k];

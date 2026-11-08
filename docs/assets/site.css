@@ -112,3 +112,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 .lb{position:fixed;inset:0;z-index:50;background:rgba(8,14,10,.88);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .lb img{max-width:100%;max-height:100%;border-radius:12px}
 @media(max-width:760px){.shots .nav{display:none}}
+
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px;margin:18px 0}
+.figs figure{margin:0}.figs img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line)}
+.figs figcaption{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+.track figure{display:grid;flex:none;margin:0;scroll-snap-align:center;justify-items:center}
+.track figcaption{width:0;min-width:100%;font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+a.tag:hover{border-color:var(--accent);color:var(--text)}

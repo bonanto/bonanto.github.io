@@ -46,7 +46,7 @@ BQ.apps.then(function(apps){
     r=r.filter(function(x){return x&&x.s.updated}).sort(function(x,y){return new Date(y.s.updated)-new Date(x.s.updated)}).slice(0,4);
     if(!r.length)return;
     document.getElementById('rec').innerHTML=r.map(function(x){
-      return '<a class="card row" href="'+(x.a.url||'/app.html?app='+x.a.id)+'">'+BQ.icon(x.a)+'<div><b>'+BQ.esc(x.a.name)+'</b> <span class="tag">v'+BQ.esc(x.s.version)+'</span></div><span class="d">'+BQ.date(x.s.updated)+'</span></a>';
+      return '<a class="card row" href="'+(x.a.url||BQ.u.app(x.a.id))+'">'+BQ.icon(x.a)+'<div><b>'+BQ.esc(x.a.name)+'</b> <span class="tag">v'+BQ.esc(x.s.version)+'</span></div><span class="d">'+BQ.date(x.s.updated)+'</span></a>';
     }).join('');
     document.getElementById('recent').hidden=false;
   });

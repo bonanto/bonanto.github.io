@@ -12,12 +12,12 @@
 <main><div class="wrap" id="app"></div></main>
 <script src="/assets/site.js"></script>
 <script>
-var id=new URLSearchParams(location.search).get('app'),root=document.getElementById('app');
+var id=BQ.route().app,root=document.getElementById('app');
 BQ.apps.then(function(list){
   var a=list.filter(function(x){return x.id===id&&x.repo&&x.status!=='soon'})[0];
   if(!a){root.innerHTML='<div class="panel" style="margin-top:64px"><h2>App not found</h2><p><a href="/software.html" class="btn sm">All software</a></p></div>';return}
   document.title='Version History · '+a.name;
-  root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / <a href="/app.html?app='+a.id+'">'+BQ.esc(a.name)+'</a> / Version History</div>'
+  root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / <a href="'+BQ.u.app(a.id)+'">'+BQ.esc(a.name)+'</a> / Version History</div>'
     +'<div class="hero" style="padding:20px 0 24px"><h1 style="margin:0">'+BQ.esc(a.name)+' <em>versions</em></h1></div><div class="panel"><div id="rels">Loading releases...</div></div>';
   BQ.rel(a.repo).then(function(rs){
     rs=BQ.stable(rs);var box=document.getElementById('rels');
