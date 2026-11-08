@@ -37,11 +37,26 @@ window.BQ={
   icon:function(a,c){return '<span class="ico '+(c||'')+'"><img src="/assets/'+a.icon+'" alt="" onload="this.parentNode.classList.add(\'has\')"><span class="fb">'+BQ.esc(a.mark)+'</span></span>'},
   src:function(a){var s=a.src||{};return{repo:a.repo,ref:s.ref||'HEAD',dir:s.dir?s.dir.replace(/\/?$/,'/'):'',index:s.index||'README.md',app:a.id}},
   raw:function(a,path){var s=BQ.src(a);return fetch('https://raw.githubusercontent.com/'+s.repo+'/'+s.ref+'/'+s.dir+path).then(function(r){return r.ok?r.text():Promise.reject()})},
+  readme:function(a){
+    if(a.src&&a.src.index)return BQ.raw(a,BQ.src(a).index);
+    return BQ.raw(a,'README.md').catch(function(){return fetch(API+a.repo+'/readme',{headers:{Accept:'application/vnd.github.raw+json'}}).then(function(r){return r.ok?r.text():Promise.reject()})});
+  },
+  docs:function(a){
+    if(a.docs)return Promise.resolve(a.docs);
+    var s=BQ.src(a),hide=['readme','index'].concat((a.hideDocs||[]).map(function(x){return x.toLowerCase()}));
+    return cached(API+a.repo+'/contents'+(s.dir?'/'+s.dir.replace(/\/$/,''):'')+(s.ref!=='HEAD'?'?ref='+s.ref:''),216e5).then(function(l){
+      return l.filter(function(f){return f.type==='file'&&/\.md$/i.test(f.name)}).map(function(f){
+        var n=f.name.replace(/\.md$/i,'');
+        return{label:n.replace(/[-_]+/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()}),path:n};
+      }).filter(function(d){return hide.indexOf(d.path.toLowerCase())<0});
+    });
+  },
   render:function(md,a){
     return needLibs().then(function(){
       md=md.replace(/^\uFEFF?---\r?\n[\s\S]*?\r?\n---\r?\n/,'');
       var t=document.createElement('div');
       t.innerHTML=DOMPurify.sanitize(marked.parse(md),{ADD_ATTR:['align']});
+      t.querySelectorAll('img').forEach(function(i){i.referrerPolicy='no-referrer';i.loading='lazy';i.setAttribute('onerror',"this.replaceWith(Object.assign(document.createElement('a'),{href:this.src,textContent:'[image]'}))")});
       if(a){
         var s=BQ.src(a),raw='https://raw.githubusercontent.com/'+s.repo+'/'+s.ref+'/'+s.dir;
         t.querySelectorAll('img').forEach(function(i){var u=i.getAttribute('src')||'';if(!/^(https?:|data:|\/\/)/.test(u))i.src=raw+u.replace(/^\.?\//,'')});

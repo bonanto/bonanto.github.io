@@ -4,7 +4,7 @@
  "about":["SM Type Test simulates typing examinations with WBPSC marking rules, keystroke tracking and custom scoring."],
  "platforms":["Windows"],"price":"Free","license":"","repo":"bonanto/smtt","asset":"","source":false,
  "src":{"ref":"gh-pages","index":"index.md"},
- "languages":[],"store":"",
+ "languages":[],"store":"","hideDocs":["privacy"],
  "data":["Works offline","Results stored on your device","No ads"],
  "links":[{"label":"Privacy policy","href":"/doc.html?app=smtt&doc=privacy"}]},
 {"id":"smencoder","name":"SM Encoder","mark":"SM","icon":"smencoder.png","category":"Utilities","status":"soon",

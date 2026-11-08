@@ -25,8 +25,9 @@ BQ.apps.then(function(list){
   root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / '+BQ.esc(a.name)+'</div>'
     +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags">'+tags+'</div></div></div>'
     +'<div class="btns" style="margin-bottom:28px;align-items:center">'+btns+'<div class="stats" id="st"></div></div>'
-    +'<div class="panel doc" id="about" hidden></div>'
+    +'<div class="shots" id="shots" hidden></div><div class="panel doc" id="about" hidden></div>'
     +(a.data&&a.data.length?'<div class="panel"><h2>Data and privacy</h2><ul class="chk">'+a.data.map(function(d){return '<li>'+BQ.esc(d)+'</li>'}).join('')+'</ul></div>':'')
+    +'<div class="panel" id="docs" hidden><h2>Documents</h2><div class="btns" id="dlist"></div></div>'
     +'<div class="panel"><h2>Details</h2><dl>'
     +'<dt>Platforms</dt><dd>'+BQ.esc((a.platforms||[]).join(', ')||'-')+'</dd>'
     +'<dt>Price</dt><dd>'+BQ.esc(a.price||'-')+'</dd>'
@@ -37,9 +38,47 @@ BQ.apps.then(function(list){
     +'</dl></div>';
   var about=document.getElementById('about');
   function fallback(){if(a.about&&a.about.length){about.className='panel doc';about.innerHTML='<h2>About</h2>'+a.about.map(function(p){return '<p>'+BQ.esc(p)+'</p>'}).join('');about.hidden=false}}
-  if(a.repo)BQ.raw(a,BQ.src(a).index).then(function(md){return BQ.render(md,a)}).then(function(h){
+  function gallery(){
+    var s=BQ.src(a),raw='https://raw.githubusercontent.com/'+s.repo+'/'+s.ref+'/'+s.dir;
+    if(a.screenshots&&a.screenshots.length)return Promise.resolve(a.screenshots.map(function(u){return /^https?:/.test(u)?u:raw+u.replace(/^\.?\//,'')}));
+    var imgs=[].slice.call(about.querySelectorAll('img')).filter(function(i){return !/shields\.io|badge|\.svg(\?|$)|workflows/i.test(i.src)});
+    return Promise.all(imgs.map(function(i){return new Promise(function(res){var m=new Image();m.onload=function(){res({i:i,w:m.naturalWidth,h:m.naturalHeight})};m.onerror=function(){res(null)};m.src=i.src})})).then(function(r){
+      var keep=[];
+      r.forEach(function(x){
+        if(!x)return;
+        var sq=Math.abs(x.w/x.h-1)<.1&&x.w<=700;
+        if(sq||x.w>=300){(x.i.closest('a')||x.i).remove()}
+        if(!sq&&x.w>=300)keep.push(x.i.src);
+      });
+      about.querySelectorAll('p,div,a').forEach(function(e){if(!e.textContent.trim()&&!e.querySelector('img'))e.remove()});
+      return keep;
+    });
+  }
+  function shots(list){
+    var box=document.getElementById('shots');
+    box.innerHTML='<button class="nav l" aria-label="Previous">‹</button><div class="track">'+list.map(function(u){return '<img src="'+BQ.esc(u)+'" alt="" loading="lazy" referrerpolicy="no-referrer">'}).join('')+'</div><button class="nav r" aria-label="Next">›</button>';
+    var tr=box.querySelector('.track');
+    box.querySelector('.l').onclick=function(){tr.scrollBy({left:-tr.clientWidth*.8,behavior:'smooth'})};
+    box.querySelector('.r').onclick=function(){tr.scrollBy({left:tr.clientWidth*.8,behavior:'smooth'})};
+    tr.onclick=function(e){
+      if(e.target.tagName!=='IMG')return;
+      var lb=document.createElement('div');lb.className='lb';lb.innerHTML='<img src="'+e.target.src+'" alt="">';
+      lb.onclick=function(){lb.remove()};document.body.appendChild(lb);
+    };
+    box.hidden=false;
+  }
+  if(a.repo)BQ.readme(a).then(function(md){return BQ.render(md,a)}).then(function(h){
     about.innerHTML=h;var h1=about.querySelector('h1');if(h1)h1.remove();about.hidden=false;
+    return gallery();
+  }).then(function(list){
+    if(list&&list.length)shots(list);
+    if(!about.textContent.trim())about.hidden=true;
   }).catch(fallback);else fallback();
+  if(a.repo)BQ.docs(a).then(function(d){
+    if(!d.length)return;
+    document.getElementById('dlist').innerHTML=d.map(function(x){return '<a class="btn sm" href="/doc.html?app='+a.id+'&doc='+encodeURIComponent(x.path)+'">'+BQ.esc(x.label)+'</a>'}).join('');
+    document.getElementById('docs').hidden=false;
+  }).catch(function(){});
   if(!a.repo)return;
   BQ.stats(a.repo).then(function(s){
     var t='';if(a.source&&s.stars)t+='<span>★ <b>'+BQ.fmt(s.stars)+'</b></span>';if(s.downloads)t+='<span>↓ <b>'+BQ.fmt(s.downloads)+'</b> downloads</span>';

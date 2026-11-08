@@ -22,7 +22,7 @@ BQ.apps.then(function(list){
   BQ.rel(a.repo).then(function(rs){
     rs=BQ.stable(rs);var box=document.getElementById('rels');
     if(!rs.length){box.textContent='No releases published yet.';return}
-    Promise.all(rs.map(function(r){return BQ.render(r.body||'')})).then(function(bodies){
+    Promise.all(rs.map(function(r){return BQ.render(r.body||'',{id:a.id,repo:a.repo,src:{ref:'HEAD'}})})).then(function(bodies){
       box.innerHTML=rs.map(function(r,i){
         var as=(r.assets||[]).map(function(x){return '<a class="btn sm primary" href="'+BQ.esc(x.browser_download_url)+'">↓ '+BQ.esc(x.name)+' ('+BQ.size(x.size)+')</a>'}).join('');
         if(a.source)as+='<a class="btn sm" href="https://github.com/'+a.repo+'/archive/refs/tags/'+encodeURIComponent(r.tag_name)+'.zip">Source (.zip)</a><a class="btn sm" href="https://github.com/'+a.repo+'/archive/refs/tags/'+encodeURIComponent(r.tag_name)+'.tar.gz">Source (.tar.gz)</a>';
