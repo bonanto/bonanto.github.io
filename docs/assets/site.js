@@ -1,10 +1,11 @@
 (function(){
 var BRAND='Bonanto';
-var NAV=[['Software','/software.html'],['About','/about.html'],['Me','/me.html'],['Privacy','/privacy.html'],['GitHub','https://github.com/bonanto']];
+var NAV=[['Software','/software.html'],['About','/about.html'],['Me','/me.html'],['Contact','/contact.html'],['Privacy','/privacy.html'],['GitHub','https://github.com/bonanto']];
 var links=NAV.map(function(n){return '<a href="'+n[1]+'">'+n[0]+'</a>'}).join('');
-document.body.insertAdjacentHTML('afterbegin','<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div><header id="hd"><div class="wrap"><div class="bar"><a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M21 3a13 13 0 1 0 8 23A11 11 0 0 1 21 3z"/></svg>'+BRAND+'</a><div class="links">'+links+'</div><button class="burger" id="bg" aria-label="Menu" aria-expanded="false"><span></span></button></div><nav class="menu">'+links+'</nav></div></header><div class="ov"></div>');
-document.body.insertAdjacentHTML('beforeend','<footer><div class="wrap foot"><span>© '+new Date().getFullYear()+' '+BRAND+'. All rights reserved.</span><nav><a href="/software.html">Software</a><a href="/about.html">About</a><a href="/me.html">Me</a><a href="/privacy.html">Privacy Policy</a><a href="https://github.com/bonanto">GitHub</a><a href="mailto:bonanto18@protonmail.com">Contact</a></nav></div></footer>');
+document.body.insertAdjacentHTML('afterbegin','<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div><header id="hd"><div class="wrap"><div class="bar"><a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" style="fill:var(--accent)"/><path fill-rule="evenodd" style="fill:var(--accent-ink)" d="M10 7H17.5a4.5 4.5 0 0 1 2.9 7.9A5 5 0 0 1 18.5 25H10ZM13.2 10.2V14H17a1.9 1.9 0 0 0 0-3.8ZM13.2 17.4V22.2H18a2.4 2.4 0 0 0 0-4.8Z"/></svg>'+BRAND+'</a><div class="links">'+links+'</div><button class="burger" id="bg" aria-label="Menu" aria-expanded="false"><span></span></button></div><nav class="menu">'+links+'</nav></div></header><div class="ov"></div>');
+document.body.insertAdjacentHTML('beforeend','<footer><div class="wrap foot"><span>© '+new Date().getFullYear()+' '+BRAND+'. All rights reserved.</span><nav><a href="/software.html">Software</a><a href="/about.html">About</a><a href="/me.html">Me</a><a href="/privacy.html">Privacy Policy</a><a href="https://github.com/bonanto">GitHub</a><a href="/contact.html">Contact</a><a href="mailto:bonanto18@protonmail.com">Mail</a></nav></div></footer>');
 
+document.head.insertAdjacentHTML('beforeend','<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">');
 var hd=document.getElementById('hd'),bg=document.getElementById('bg');
 function tog(o){hd.classList.toggle('open',o);bg.setAttribute('aria-expanded',o)}
 bg.onclick=function(){tog(!hd.classList.contains('open'))};

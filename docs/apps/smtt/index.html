@@ -48,11 +48,24 @@ BQ.apps.then(function(list){
     }
     var out=[];
     about.querySelectorAll('img').forEach(function(i){
-      var fc=i.closest('figure')&&i.closest('figure').querySelector('figcaption');
-      out.push({u:i.src,c:fc?fc.innerText:(i.alt||''),el:i});
+      var f=i.closest('figure'),fc=f&&f.querySelector('figcaption');
+      out.push({u:i.src,c:fc?fc.innerText.trim():(i.alt||''),el:i,fig:f});
     });
     if(!a.keepImages){
-      out.forEach(function(x){var f=x.el.closest('figure');(x.el.closest('a')||x.el).remove();if(f&&!f.querySelector('img'))f.remove()});
+      out.forEach(function(x){
+        var i=x.el,host=i.closest('p,div'),node=i.closest('a')||i;
+        if(!x.fig&&host&&host!==about&&host.querySelectorAll('img').length===1){
+          var tx=host.textContent.trim();
+          if(tx.length<120){if(tx)x.c=tx;node=host}
+        }
+        var nx=node.nextElementSibling;
+        if(!x.fig&&nx&&!nx.querySelector('img')){
+          var t=nx.textContent.trim(),w=nx.firstElementChild;
+          if(t&&t.length<100&&(nx.getAttribute('align')==='center'||(w&&/^(EM|I|SUB|SMALL|STRONG|B)$/.test(w.tagName)&&w.textContent.trim()===t))){x.c=x.c||t;nx.remove()}
+        }
+        node.remove();
+        if(x.fig&&!x.fig.querySelector('img'))x.fig.remove();
+      });
       for(var k=0;k<3;k++)about.querySelectorAll('p,div,a,figure,span').forEach(function(e){if(!e.textContent.trim()&&!e.querySelector('img,video,iframe,svg'))e.remove()});
     }
     return out;
