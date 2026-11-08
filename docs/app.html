@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bonanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<main><div class="wrap" id="app"></div></main>
+<script src="/assets/site.js"></script>
+<script>
+var id=new URLSearchParams(location.search).get('app'),root=document.getElementById('app');
+function fsize(b){return b>=1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+function fdate(s){return new Date(s).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}
+BQ.apps.then(function(list){
+  var a=list.filter(function(x){return x.id===id&&x.status!=='soon'})[0];
+  if(!a){root.innerHTML='<div class="panel" style="margin-top:64px"><h2>App not found</h2><p><a href="/#software" class="btn sm">Back to software</a></p></div>';return}
+  document.title=a.name+' · Bonanto';
+  var latest=a.repo?'https://github.com/'+a.repo+'/releases/latest'+(a.asset?'/download/'+a.asset:''):'';
+  var tags=(a.price?'<span class="tag k">'+BQ.esc(a.price)+'</span>':'')+(a.license?'<span class="tag">'+BQ.esc(a.license)+'</span>':'')
+    +(a.platforms||[]).map(function(p){return '<span class="tag">'+BQ.esc(p)+'</span>'}).join('');
+  var btns=(latest?'<a class="btn primary" id="dl" href="'+latest+'">Download</a><a class="btn" href="#history">Version History</a>':'')
+    +(a.links||[]).map(function(l){return '<a class="btn" href="'+BQ.esc(l.href)+'">'+BQ.esc(l.label)+'</a>'}).join('');
+  var h='<div class="app-head">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags">'+tags+'</div></div></div>'
+    +'<div class="btns" style="margin-bottom:28px">'+btns+'</div>';
+  if(a.about&&a.about.length)h+='<div class="panel"><h2>About</h2>'+a.about.map(function(p){return '<p>'+BQ.esc(p)+'</p>'}).join('')+'</div>';
+  if(a.data&&a.data.length)h+='<div class="panel"><h2>Data and privacy</h2><ul class="chk">'+a.data.map(function(d){return '<li>'+BQ.esc(d)+'</li>'}).join('')+'</ul></div>';
+  h+='<div class="panel"><h2>Details</h2><dl>'
+    +'<dt>Platforms</dt><dd>'+BQ.esc((a.platforms||[]).join(', ')||'-')+'</dd>'
+    +'<dt>Price</dt><dd>'+BQ.esc(a.price||'-')+'</dd>'
+    +(a.license?'<dt>Licence</dt><dd>'+BQ.esc(a.license)+'</dd>':'')
+    +'<dt>Latest version</dt><dd id="ver">-</dd><dt>Popularity</dt><dd id="pop">-</dd></dl></div>';
+  if(a.repo)h+='<div class="panel" id="history"><h2>Version History</h2><div id="rels" class="md">Loading releases...</div></div>';
+  root.innerHTML=h;
+  if(!a.repo)return;
+  BQ.stats(a.repo).then(function(s){
+    var t=[];if(s.stars!=null)t.push('★ '+BQ.fmt(s.stars)+' stars');if(s.downloads)t.push('↓ '+BQ.fmt(s.downloads)+' downloads');
+    document.getElementById('pop').textContent=t.join('  ·  ')||'-';
+  }).catch(function(){});
+  BQ.cached('https://api.github.com/repos/'+a.repo+'/releases?per_page=100',36e5,{Accept:'application/vnd.github.html+json'}).then(function(rs){
+    rs=rs.filter(function(r){return !r.prerelease&&!r.draft});
+    var box=document.getElementById('rels');
+    if(!rs.length){box.textContent='No releases published yet.';return}
+    document.getElementById('ver').textContent=rs[0].tag_name;
+    var dl=document.getElementById('dl');if(dl)dl.textContent='Download '+rs[0].tag_name;
+    box.className='';
+    box.innerHTML=rs.map(function(r,i){
+      var as=(r.assets||[]).map(function(x){return '<a class="btn sm" href="'+BQ.esc(x.browser_download_url)+'">↓ '+BQ.esc(x.name)+' <span style="opacity:.7">('+fsize(x.size)+')</span></a>'}).join('');
+      return '<article class="rel"><div class="rh"><h3>'+BQ.esc(r.name||r.tag_name)+'</h3>'+(i?'':'<span class="tag k">Latest</span>')+'<time>'+fdate(r.published_at)+'</time></div>'
+        +'<details'+(i?'':' open')+'><summary>Details</summary><div class="md">'+(r.body_html||'No description provided.')+'</div></details>'
+        +'<div class="assets">'+(as||'<span class="tag">No downloads attached</span>')+'</div></article>';
+    }).join('');
+  }).catch(function(){document.getElementById('rels').innerHTML='Could not load releases. <a href="https://github.com/'+a.repo+'/releases" style="text-decoration:underline">View on GitHub</a>.'});
+});
+</script>
+</body>
+</html>
