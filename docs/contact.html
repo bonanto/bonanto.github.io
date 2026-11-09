@@ -15,6 +15,7 @@
 <div class="values" style="margin-bottom:16px">
 <div class="val"><h4>Mail</h4><p>Reach me directly by email.</p><p style="margin-top:12px"><a class="btn sm primary" href="mailto:bonanto18@protonmail.com">bonanto18@protonmail.com</a></p></div>
 <div class="val"><h4>GitHub</h4><p>For bugs in open-source apps, open an issue in the app's repository.</p><p style="margin-top:12px"><a class="btn sm" href="https://github.com/bonanto">github.com/bonanto</a></p></div>
+<div class="val" id="chan" hidden><h4>News and updates</h4><p>Join the Telegram channel for release news. Other subscribers cannot see you.</p><p style="margin-top:12px"><a class="btn sm" id="chanl" href="#">Join the channel</a></p></div>
 </div>
 <div class="panel" id="form">
 <h2>Send a message</h2>
@@ -42,6 +43,7 @@
 <script>
 (function(){
 var C=window.BQ_CONFIG||{},f=document.getElementById('cf'),soon=document.getElementById('soon'),t0=Date.now(),wid=null;
+if(C.channelUrl){document.getElementById('chan').hidden=false;document.getElementById('chanl').href=C.channelUrl}
 if(!C.contactEndpoint){soon.hidden=false;return}
 f.hidden=false;
 var $=function(i){return document.getElementById(i)},sel=$('app'),want=new URLSearchParams(location.search).get('app');
@@ -49,7 +51,17 @@ BQ.apps.then(function(l){l.filter(function(a){return a.status!=='soon'}).forEach
 if(C.turnstileSiteKey){var s=document.createElement('script');s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';s.onload=function(){wid=turnstile.render('#ts',{sitekey:C.turnstileSiteKey})};document.head.appendChild(s)}
 var msg=$('msg'),cnt=$('cnt'),st=$('st'),btn=$('send');
 msg.oninput=function(){cnt.textContent=msg.value.length+' / 2000'};
-function show(c,t){st.className='note '+c;st.textContent=t;st.hidden=false}
+function show(c,t,link){
+  st.className='note '+c;st.textContent=t;
+  if(link){
+    var p=document.createElement('p'),a=document.createElement('a'),n=document.createElement('small');
+    a.className='btn primary';a.href=link;a.target='_blank';a.rel='noopener';a.textContent='Continue on Telegram';
+    n.style.display='block';n.style.marginTop='8px';
+    n.textContent='Optional: tap it and press Start to chat with me privately. I only see what you type, not your Telegram name, username or phone number.';
+    p.appendChild(a);p.appendChild(n);st.appendChild(p);
+  }
+  st.hidden=false;
+}
 f.onsubmit=function(e){
   e.preventDefault();st.hidden=true;
   var tok=(C.turnstileSiteKey&&wid!==null)?turnstile.getResponse(wid):'';
@@ -58,7 +70,7 @@ f.onsubmit=function(e){
   fetch(C.contactEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:$('topic').value,app:sel.value,name:$('fname').value,reply:$('reply').value,message:msg.value,website:$('website').value,t:Date.now()-t0,token:tok})})
   .then(function(r){return r.json().catch(function(){return{ok:false}})})
   .then(function(j){
-    if(j.ok){f.reset();cnt.textContent='0 / 2000';show('ok','Thanks, your message was sent.')}
+    if(j.ok){f.reset();cnt.textContent='0 / 2000';show('ok','Thanks, your message was sent.',j.link)}
     else show('err',j.error||'Could not send. Please email me instead.');
   })
   .catch(function(){show('err','Could not send. Please email me instead.')})
