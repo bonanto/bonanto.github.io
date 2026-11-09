@@ -28,7 +28,7 @@
 </div>
 <div class="row2">
 <div class="fld"><label for="fname">Name (optional)</label><input id="fname" maxlength="80" autocomplete="name"></div>
-<div class="fld"><label for="reply">How should I reply? (optional)</label><input id="reply" maxlength="120" placeholder="Email or Telegram @username"></div>
+<div class="fld"><label for="reply">Your email (for my reply)</label><input id="reply" type="email" maxlength="120" required autocomplete="email"><small>Used only to reply. Never published.</small></div>
 </div>
 <div class="fld"><label for="msg">Message</label><textarea id="msg" maxlength="2000" required minlength="5"></textarea><small id="cnt">0 / 2000</small></div>
 <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -57,7 +57,7 @@ function show(c,t,link){
     var p=document.createElement('p'),a=document.createElement('a'),n=document.createElement('small');
     a.className='btn primary';a.href=link;a.target='_blank';a.rel='noopener';a.textContent='Continue on Telegram';
     n.style.display='block';n.style.marginTop='8px';
-    n.textContent='Optional: tap it and press Start to chat with me privately. I only see what you type, not your Telegram name, username or phone number.';
+    n.textContent='You will see this button only once. If you reload or leave this page it is gone, and you would have to send another message to get a new one. Tap it and press Start to chat with me privately. I only see what you type, not your Telegram name, username or phone number.';
     p.appendChild(a);p.appendChild(n);st.appendChild(p);
   }
   st.hidden=false;
@@ -70,7 +70,7 @@ f.onsubmit=function(e){
   fetch(C.contactEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:$('topic').value,app:sel.value,name:$('fname').value,reply:$('reply').value,message:msg.value,website:$('website').value,t:Date.now()-t0,token:tok})})
   .then(function(r){return r.json().catch(function(){return{ok:false}})})
   .then(function(j){
-    if(j.ok){f.reset();cnt.textContent='0 / 2000';show('ok','Thanks, your message was sent.',j.link)}
+    if(j.ok){f.reset();cnt.textContent='0 / 2000';show('ok','Your message was sent. I will reply to your email.',j.link)}
     else show('err',j.error||'Could not send. Please email me instead.');
   })
   .catch(function(){show('err','Could not send. Please email me instead.')})

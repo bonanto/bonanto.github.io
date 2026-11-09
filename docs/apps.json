@@ -41,7 +41,10 @@
    "readme": {
     "ref": "HEAD",
     "path": "README.md"
-   }
+   },
+   "hideText": [
+    "Comprehensive Results Viewer"
+   ]
   },
   {
    "id": "smencoder",
