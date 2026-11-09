@@ -17,6 +17,7 @@
 <div class="val"><h4>GitHub</h4><p>For bugs in open-source apps, open an issue in the app's repository.</p><p style="margin-top:12px"><a class="btn sm" href="https://github.com/bonanto">github.com/bonanto</a></p></div>
 <div class="val" id="chan" hidden><h4>News and updates</h4><p>Join the Telegram channel for release news. Other subscribers cannot see you.</p><p style="margin-top:12px"><a class="btn sm" id="chanl" href="#">Join the channel</a></p></div>
 </div>
+<div class="panel" id="ratep" hidden><h2>Rate an app</h2><p class="sub">Sign in with Google or GitHub to rate or review an app.</p><div class="row2"><div class="fld"><label for="rapp">App</label><select id="rapp"></select></div><div class="fld"><label>Your rating</label><span id="rstars"></span></div></div></div>
 <div class="panel" id="form">
 <h2>Send a message</h2>
 <p class="sub" style="margin-bottom:20px">Your message is delivered only to me. It is never published, and I never need your phone number.</p>
@@ -40,11 +41,21 @@
 </div></main>
 <script src="/assets/config.js"></script>
 <script src="/assets/site.js"></script>
+<script src="/assets/reviews.js"></script>
 <script>
 (function(){
 var C=window.BQ_CONFIG||{},f=document.getElementById('cf'),soon=document.getElementById('soon'),t0=Date.now(),wid=null;
 if(C.channelUrl){document.getElementById('chan').hidden=false;document.getElementById('chanl').href=C.channelUrl}
 if(!C.contactEndpoint){soon.hidden=false;return}
+if(window.BQR&&BQR.B){
+  var rs=document.getElementById('rapp'),rp=document.getElementById('ratep');
+  BQ.apps.then(function(l){
+    l.filter(function(a){return a.status!=='soon'&&a.repo}).forEach(function(a){var o=document.createElement('option');o.value=a.id;o.textContent=a.name;rs.appendChild(o)});
+    BQR.stars(document.getElementById('rstars'),0,function(n){BQR.open(rs.value,n)});
+    rp.hidden=false;
+    var it=BQR.takeIntent();if(it&&it.app){rs.value=it.app;BQR.open(it.app,it.rating)}
+  });
+}
 f.hidden=false;
 var $=function(i){return document.getElementById(i)},sel=$('app'),want=new URLSearchParams(location.search).get('app');
 BQ.apps.then(function(l){l.filter(function(a){return a.status!=='soon'}).forEach(function(a){var o=document.createElement('option');o.value=a.name;o.textContent=a.name;if(a.id===want)o.selected=true;sel.appendChild(o)})});

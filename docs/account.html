@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Account · Bonanto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<main><div class="wrap prose">
+<div class="hero" style="padding-bottom:24px"><h1>Account</h1>
+<p class="lead">Manage your sign-in, newsletter choice and reviews.</p></div>
+<div id="acc"></div>
+</div></main>
+<script src="/assets/config.js"></script>
+<script src="/assets/site.js"></script>
+<script src="/assets/reviews.js"></script>
+<script>
+var box=document.getElementById('acc'),el=BQR.el;
+function panel(title){var p=el('div','panel');if(title)p.appendChild(el('h2','',title));box.appendChild(p);return p}
+function render(){
+  box.innerHTML='';
+  if(!BQR.B){panel('Sign-in is not available yet').appendChild(el('p','sub','Please check back soon.'));return}
+  if(!BQR.tok()){
+    var p=panel('Sign in');
+    p.appendChild(el('p','sub','Sign in with Google or GitHub to rate and review apps, and to manage your choices here. Signing in only confirms you are a real person. Your email is never shown.'));
+    p.appendChild(BQR.loginButtons('',0));
+    return;
+  }
+  box.appendChild(el('p','sub','Loading...'));
+  Promise.all([BQR.api('/api/me'),BQ.apps]).then(function(r){
+    var j=r[0],apps=r[1];
+    box.innerHTML='';
+    if(!j.ok){
+      if(!BQR.tok()){render();return}
+      panel('Something went wrong').appendChild(el('p','sub',j.error||'Please try again.'));return;
+    }
+    var p1=panel('Signed in');
+    p1.appendChild(el('p','',j.provider==='google'?'Google account '+j.email:'GitHub account '+j.email));
+    var out=el('button','btn sm','Sign out');out.onclick=function(){BQR.clear();render()};
+    p1.appendChild(out);
+
+    var p2=panel('Newsletter');
+    p2.appendChild(el('p','sub','News and updates by email. Your address is stored only while this is ticked.'));
+    var lab=el('label','chkl'),cb=el('input');cb.type='checkbox';cb.checked=j.subscribed;
+    lab.appendChild(cb);lab.appendChild(el('span','','Send me news and updates'));p2.appendChild(lab);
+    var sv=el('button','btn sm primary','Save');sv.style.marginTop='12px';
+    var nt=el('div','note');nt.hidden=true;
+    sv.onclick=function(){BQR.api('/api/newsletter',{method:'POST',body:{subscribe:cb.checked}}).then(function(x){nt.className='note '+(x.ok?'ok':'err');nt.textContent=x.ok?'Saved.':(x.error||'Could not save.');nt.hidden=false})};
+    p2.appendChild(sv);p2.appendChild(nt);
+
+    var p3=panel('Your reviews');
+    if(!j.reviews.length)p3.appendChild(el('p','sub','You have not reviewed any app yet.'));
+    j.reviews.forEach(function(r){
+      var a=apps.filter(function(x){return x.id===r.app})[0],row=el('div','rvi'),h=el('div','h');
+      h.appendChild(el('span','s',BQR.str(r.rating)));
+      h.appendChild(el('b','',a?a.name:r.app));
+      h.appendChild(el('span','tag'+(r.status==='published'?' k':''),r.status==='published'?'Published':r.status==='rejected'?'Not published':'Pending'));
+      var ed=el('a','btn sm','Edit or delete');ed.href='/apps/'+r.app+'/#review';ed.style.marginLeft='auto';
+      h.appendChild(ed);row.appendChild(h);p3.appendChild(row);
+    });
+
+    var p4=panel('Delete my data');
+    p4.appendChild(el('p','sub','Removes all your reviews and your newsletter subscription, and signs you out.'));
+    var dl=el('button','btn dng','Delete everything');
+    dl.onclick=function(){
+      if(!confirm('Delete all your reviews and your subscription? This cannot be undone.'))return;
+      BQR.api('/api/account/delete',{method:'POST'}).then(function(x){if(x.ok){BQR.clear();render()}})
+    };
+    p4.appendChild(dl);
+  });
+}
+render();
+</script>
+</body>
+</html>

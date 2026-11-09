@@ -10,7 +10,9 @@
 </head>
 <body>
 <main><div class="wrap" id="app"></div></main>
+<script src="/assets/config.js"></script>
 <script src="/assets/site.js"></script>
+<script src="/assets/reviews.js"></script>
 <script>
 var id=BQ.route().app,root=document.getElementById('app');
 BQ.apps.then(function(list){
@@ -25,7 +27,7 @@ BQ.apps.then(function(list){
     +(a.store?'<a class="btn" href="'+BQ.esc(a.store)+'">Microsoft Store</a>':'')
     +(a.links||[]).map(function(l){return '<a class="btn" href="'+BQ.esc(l.href)+'">'+BQ.esc(l.label)+'</a>'}).join('');
   root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / '+BQ.esc(a.name)+'</div>'
-    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags" id="tg">'+tags+'</div></div></div>'
+    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><div class="rate" id="rate"></div><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags" id="tg">'+tags+'</div></div></div>'
     +'<div class="btns" style="margin-bottom:28px;align-items:center">'+btns+'<div class="stats" id="st"></div></div>'
     +'<div class="shots" id="shots" hidden></div><div class="panel doc" id="about" hidden></div>'
     +(a.data&&a.data.length?'<div class="panel"><h2>Data and privacy</h2><ul class="chk">'+a.data.map(function(d){return '<li>'+BQ.esc(d)+'</li>'}).join('')+'</ul></div>':'')
@@ -37,7 +39,8 @@ BQ.apps.then(function(list){
     +'<dt>Languages</dt><dd id="lang">'+BQ.esc((a.languages||[]).join(', ')||'-')+'</dd>'
     +'<dt>Latest version</dt><dd id="ver">-</dd><dt>Released</dt><dd id="rd">-</dd>'
     +(a.source?'<dt>Source code</dt><dd><a href="https://github.com/'+a.repo+'" style="text-decoration:underline">github.com/'+a.repo+'</a></dd>':'')
-    +'</dl></div>';
+    +'</dl></div>'
+    +'<div class="panel" id="rv" hidden></div>';
   var about=document.getElementById('about'),tg=document.getElementById('tg');
 
   function fallback(){if(a.about&&a.about.length){about.innerHTML='<h2>About</h2>'+a.about.map(function(p){return '<p>'+BQ.esc(p)+'</p>'}).join('');about.hidden=false}}
@@ -109,6 +112,7 @@ BQ.apps.then(function(list){
     document.getElementById('dlist').innerHTML=d.map(function(x){return '<a class="btn sm" href="'+BQ.u.doc(a.id,x.path)+'">'+BQ.esc(x.label)+'</a>'}).join('');
     document.getElementById('docs').hidden=false;
   }).catch(function(){});
+  if(window.BQR)BQR.mount(a);
   if(!a.repo)return;
   BQ.stats(a.repo).then(function(s){
     var t='';if(s.stars)t+='<span>★ <b>'+BQ.fmt(s.stars)+'</b></span>';if(s.downloads)t+='<span>↓ <b>'+BQ.fmt(s.downloads)+'</b> downloads</span>';
