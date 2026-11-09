@@ -27,7 +27,7 @@ BQ.apps.then(function(list){
     +(a.store?'<a class="btn" href="'+BQ.esc(a.store)+'">Microsoft Store</a>':'')
     +(a.links||[]).map(function(l){return '<a class="btn" href="'+BQ.esc(l.href)+'">'+BQ.esc(l.label)+'</a>'}).join('');
   root.innerHTML='<div class="crumb"><a href="/software.html">Software</a> / '+BQ.esc(a.name)+'</div>'
-    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div><h1>'+BQ.esc(a.name)+'</h1><div class="rate" id="rate"></div><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags" id="tg">'+tags+'</div></div></div>'
+    +'<div class="app-head" style="padding-top:20px">'+BQ.icon(a,'lg')+'<div class="ah"><div class="trow"><h1>'+BQ.esc(a.name)+'</h1><div class="rate" id="rate"></div></div><p class="lead">'+BQ.esc(a.tagline)+'</p><div class="tags" id="tg">'+tags+'</div></div></div>'
     +'<div class="btns" style="margin-bottom:28px;align-items:center">'+btns+'<div class="stats" id="st"></div></div>'
     +'<div class="shots" id="shots" hidden></div><div class="panel doc" id="about" hidden></div>'
     +(a.data&&a.data.length?'<div class="panel"><h2>Data and privacy</h2><ul class="chk">'+a.data.map(function(d){return '<li>'+BQ.esc(d)+'</li>'}).join('')+'</ul></div>':'')

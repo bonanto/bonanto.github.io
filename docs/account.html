@@ -38,7 +38,11 @@ function render(){
       panel('Something went wrong').appendChild(el('p','sub',j.error||'Please try again.'));return;
     }
     var p1=panel('Signed in');
-    p1.appendChild(el('p','',j.provider==='google'?'Google account '+j.email:'GitHub account '+j.email));
+    var w=el('div','who2');
+    if(j.avatar){var im=el('img');im.src=j.avatar;im.alt='';im.referrerPolicy='no-referrer';w.appendChild(im)}
+    var wt=el('div');wt.appendChild(el('b','',j.name||'Signed in'));
+    wt.appendChild(el('div','sub',(j.provider==='google'?'Google account ':'GitHub account ')+j.email));
+    w.appendChild(wt);p1.appendChild(w);
     var out=el('button','btn sm','Sign out');out.onclick=function(){BQR.clear();render()};
     p1.appendChild(out);
 
@@ -57,7 +61,7 @@ function render(){
       var a=apps.filter(function(x){return x.id===r.app})[0],row=el('div','rvi'),h=el('div','h');
       h.appendChild(el('span','s',BQR.str(r.rating)));
       h.appendChild(el('b','',a?a.name:r.app));
-      h.appendChild(el('span','tag'+(r.status==='published'?' k':''),r.status==='published'?'Published':r.status==='rejected'?'Not published':'Pending'));
+      if(r.status==='published')h.appendChild(el('span','tag k','Published'));
       var ed=el('a','btn sm','Edit or delete');ed.href='/apps/'+r.app+'/#review';ed.style.marginLeft='auto';
       h.appendChild(ed);row.appendChild(h);p3.appendChild(row);
     });

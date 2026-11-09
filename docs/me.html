@@ -11,9 +11,63 @@
 <body>
 <main><div class="wrap prose">
 <div class="hero" style="padding-bottom:24px"><h1>Me</h1></div>
-<div class="panel"><h2>Hello</h2><p>Write a short introduction here.</p></div>
-<div class="panel"><h2>Get in touch</h2><p>Email: <a href="mailto:bonanto18@protonmail.com" style="text-decoration:underline">bonanto18@protonmail.com</a><br>GitHub: <a href="https://github.com/bonanto" style="text-decoration:underline">github.com/bonanto</a></p></div>
+
+<div class="panel"><div class="me">
+<img class="me-av" src="https://github.com/bonanto.png?size=240" alt="Profile picture" width="120" height="120">
+<div>
+<h2 style="margin:0 0 4px">Bonanto</h2>
+<p class="sub" style="margin:0 0 12px">Independent developer</p>
+<p>I write software as a hobby, mostly desktop tools for Windows and Linux around typing, Bengali keyboards and small utilities. Everything I publish is on this site, and the code I can share is on GitHub.</p>
+<p>When I am away from the keyboard, I like to read, spend time in the garden and write a little.</p>
+<p style="margin-top:14px"><a class="btn sm" href="https://github.com/bonanto">GitHub profile ↗</a> <a class="btn sm" href="/contact.html">Contact</a></p>
+</div></div></div>
+
+<div class="panel" id="ghp" hidden><h2>On GitHub</h2>
+<div class="stat" id="gst"></div>
+<div class="heat" id="heat" aria-label="Public GitHub activity, recent months"></div>
+<p class="fine" style="margin-top:8px">Public activity from the last few months. Private work is not shown.</p>
+<ul class="acts" id="acts"></ul>
+</div>
+
+<!-- Edit the dedication text below -->
+<div class="dedic">Everything Exists Because You Exist, All these is a reflection of Your decency, everything belongs to You, Ms S Mallick.</div>
 </div></main>
 <script src="/assets/site.js"></script>
+<script>
+var U='bonanto';
+function lvl(n){return n<1?'':n===1?'l1':n<4?'l2':n<7?'l3':'l4'}
+function desc(e){
+  var rp=e.repo.name.replace(U+'/',''),p=e.payload||{};
+  switch(e.type){
+    case 'PushEvent':var n=p.size||(p.commits&&p.commits.length)||1;return 'Pushed '+n+' commit'+(n>1?'s':'')+' to '+rp;
+    case 'ReleaseEvent':return 'Published release '+((p.release&&p.release.tag_name)||'')+' in '+rp;
+    case 'CreateEvent':return 'Created '+p.ref_type+' in '+rp;
+    case 'WatchEvent':return 'Starred '+rp;
+    case 'IssuesEvent':return 'Issue '+p.action+' in '+rp;
+    case 'PullRequestEvent':return 'Pull request '+p.action+' in '+rp;
+    default:return 'Activity in '+rp;
+  }
+}
+Promise.all([BQ.cached('https://api.github.com/users/'+U,216e5),BQ.cached('https://api.github.com/users/'+U+'/events/public?per_page=100',216e5)]).then(function(r){
+  var u=r[0],ev=r[1],st=document.getElementById('gst');
+  [['Public repositories',u.public_repos],['Followers',u.followers],['On GitHub since',new Date(u.created_at).getFullYear()]].forEach(function(x){
+    var d=document.createElement('div'),b=document.createElement('b');b.textContent=x[1];d.appendChild(b);d.appendChild(document.createTextNode(x[0]));st.appendChild(d);
+  });
+  var counts={};
+  ev.forEach(function(e){var k=new Date(e.created_at).toLocaleDateString('en-CA');counts[k]=(counts[k]||0)+(e.type==='PushEvent'?(e.payload.size||1):1)});
+  var heat=document.getElementById('heat'),today=new Date(),start=new Date(today);start.setDate(start.getDate()-90);
+  for(var i=0;i<start.getDay();i++){var pad=document.createElement('i');pad.className='e';heat.appendChild(pad)}
+  for(var d=new Date(start);d<=today;d.setDate(d.getDate()+1)){
+    var k=d.toLocaleDateString('en-CA'),c=document.createElement('i'),n=counts[k]||0;
+    c.className=lvl(n);c.title=k+': '+n+' contribution'+(n===1?'':'s');heat.appendChild(c);
+  }
+  var ul=document.getElementById('acts');
+  ev.slice(0,6).forEach(function(e){
+    var li=document.createElement('li'),s=document.createElement('span'),t=document.createElement('time');
+    s.textContent=desc(e);t.textContent=BQ.date(e.created_at);li.appendChild(s);li.appendChild(t);ul.appendChild(li);
+  });
+  document.getElementById('ghp').hidden=false;
+}).catch(function(){});
+</script>
 </body>
 </html>
