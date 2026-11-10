@@ -37,19 +37,28 @@ function modal(onClose){
   b.close=close;
   return b;
 }
+var PV=null;
+function providers(){
+  // Cached; failures are not cached
+  if(!PV)PV=api('/api/providers').then(function(j){if(!j||!j.ok)PV=null;return j});
+  return PV;
+}
+if(B)providers(); // Warm up the Worker on page load
 function loginButtons(app,rating){
-  var g=el('div','oauth');
-  api('/api/providers').then(function(pr){
-  var list=[['google','Continue with Google'],['github','Continue with GitHub']].filter(function(x){return pr&&pr[x[0]]});
-  if(!list.length)g.appendChild(el('p','sub','Sign-in is not available yet. Please check back soon.'));
-  list.forEach(function(p){
+  var g=el('div','oauth'),btns={};
+  [['google','Continue with Google'],['github','Continue with GitHub']].forEach(function(p){
     var a=el('button','btn',p[1]);a.type='button';
     a.onclick=function(){
       try{sessionStorage.setItem('bq_intent',JSON.stringify({app:app||'',rating:rating||0}))}catch(e){}
       location.href=B+'/auth/'+p[0]+'?return='+encodeURIComponent(location.origin+location.pathname+location.search);
     };
-    g.appendChild(a);
+    btns[p[0]]=a;g.appendChild(a);
   });
+  // Buttons show instantly; hide only what the server says is off
+  providers().then(function(pr){
+    if(!pr||pr.ok!==true)return;
+    if(!pr.google&&!pr.github){g.innerHTML='';g.appendChild(el('p','sub','Sign-in is not available yet. Please check back soon.'));return}
+    Object.keys(btns).forEach(function(k){if(!pr[k])btns[k].remove()});
   });
   return g;
 }
@@ -61,36 +70,33 @@ function signin(b,app,rating){
   var c=el('button','btn sm','Cancel');c.type='button';c.style.marginTop='14px';c.onclick=b.close;
   b.appendChild(c);
 }
-function form(b,app,rating,mine,me,done){
+function form(b,app,rating,ctx,done){
+  var mine=null,me={},pc=null,touched={};
   b.innerHTML='';
-  b.appendChild(el('h3','',mine?'Edit your public review':'Add a Public Review'));
+  var h3=el('h3','','Add a Public Review');b.appendChild(h3);
   b.appendChild(el('p','fine','This is a public review. Your name and profile picture may be seen by other visitors. We never publish your email address. It is used only for the newsletter, if you opt in.'));
   var sh=el('div');b.appendChild(sh);
-  var st=stars(sh,rating||(mine&&mine.rating)||0);
+  var st=stars(sh,rating||0);
   var f1=el('div','fld');f1.style.marginTop='14px';
   var l1=el('label','','Your review (optional)');l1.htmlFor='rv-t';
-  var ta=el('textarea');ta.id='rv-t';ta.maxLength=900;ta.value=mine&&mine.text||'';
-  var cn=el('small','',ta.value.length+' / 900');
-  ta.oninput=function(){cn.textContent=ta.value.length+' / 900'};
+  var ta=el('textarea');ta.id='rv-t';ta.maxLength=900;
+  var cn=el('small','','0 / 900');
+  ta.oninput=function(){touched.t=1;cn.textContent=ta.value.length+' / 900'};
   f1.appendChild(l1);f1.appendChild(ta);f1.appendChild(cn);b.appendChild(f1);
   var f2=el('div','fld');
   var l2=el('label','','Display name');l2.htmlFor='rv-n';
-  var nm=el('input');nm.id='rv-n';nm.maxLength=40;nm.value=mine?(mine.name||''):(me.name||'');
+  var nm=el('input');nm.id='rv-n';nm.maxLength=40;
+  nm.oninput=function(){touched.n=1};
   f2.appendChild(l2);f2.appendChild(nm);b.appendChild(f2);
-  var pc=null;
-  if(me.avatar){
-    var pl=el('label','chkl');pc=el('input');pc.type='checkbox';pc.checked=mine?!!mine.showPhoto:true;
-    var im=el('img','av');im.src=me.avatar;im.alt='';im.referrerPolicy='no-referrer';
-    pl.appendChild(pc);pl.appendChild(im);pl.appendChild(el('span','','Show my profile picture'));
-    pl.style.alignItems='center';pl.style.marginBottom='10px';b.appendChild(pl);
-  }
-  var lab=el('label','chkl'),cb=el('input');cb.type='checkbox';cb.checked=!!me.subscribed;
+  var pw=el('div');b.appendChild(pw);
+  var lab=el('label','chkl'),cb=el('input');cb.type='checkbox';
+  cb.onchange=function(){touched.c=1};
   lab.appendChild(cb);
   lab.appendChild(el('span','','Send me news and updates by email. Optional. You can change this any time on your Account page.'));
   b.appendChild(lab);
   var msg=el('div','note');msg.hidden=true;b.appendChild(msg);
   var row=el('div','btns');row.style.marginTop='16px';
-  var go=el('button','btn primary','Submit');go.type='button';
+  var go=el('button','btn primary','Loading...');go.type='button';go.disabled=true;
   go.onclick=function(){
     if(!st.get()){msg.className='note err';msg.textContent='Please choose a star rating.';msg.hidden=false;return}
     go.disabled=true;go.textContent='Sending...';
@@ -99,7 +105,7 @@ function form(b,app,rating,mine,me,done){
         b.innerHTML='';
         b.appendChild(el('h3','','Thank you'));
         b.appendChild(el('p','sub','Your review has been submitted.'));
-        var c=el('button','btn primary','Close');c.onclick=b.close;b.appendChild(c);
+        var c=el('button','btn primary','Close');c.type='button';c.onclick=b.close;b.appendChild(c);
         if(done)done();
       }else{
         go.disabled=false;go.textContent='Submit';
@@ -109,25 +115,42 @@ function form(b,app,rating,mine,me,done){
     });
   };
   row.appendChild(go);
-  if(mine){
-    var del=el('button','btn dng','Delete review');del.type='button';
-    del.onclick=function(){
-      if(!confirm('Delete your review?'))return;
-      api('/api/review?app='+app,{method:'DELETE'}).then(function(j){if(j.ok){b.close();if(done)done()}});
-    };
-    row.appendChild(del);
-  }
+  var del=el('button','btn dng','Delete review');del.type='button';del.style.display='none';
+  del.onclick=function(){
+    if(!confirm('Delete your review?'))return;
+    api('/api/review?app='+app,{method:'DELETE'}).then(function(j){if(j.ok){b.close();if(done)done()}});
+  };
+  row.appendChild(del);
   var cx=el('button','btn','Cancel');cx.type='button';cx.onclick=b.close;row.appendChild(cx);
   b.appendChild(row);
+  // Called once server data arrives; never overwrites what the user typed
+  ctx.fill=function(){
+    mine=ctx.mine;me=ctx.me||{};
+    h3.textContent=mine?'Edit your public review':'Add a Public Review';
+    if(mine&&!st.get())st.set(mine.rating);
+    if(!touched.t){ta.value=mine&&mine.text||'';cn.textContent=ta.value.length+' / 900'}
+    if(!touched.n)nm.value=mine?(mine.name||''):(me.name||'');
+    if(!touched.c)cb.checked=!!me.subscribed;
+    if(me.avatar&&!pc){
+      var pl=el('label','chkl');pc=el('input');pc.type='checkbox';pc.checked=mine?!!mine.showPhoto:true;
+      var im=el('img','av');im.src=me.avatar;im.alt='';im.referrerPolicy='no-referrer';
+      pl.appendChild(pc);pl.appendChild(im);pl.appendChild(el('span','','Show my profile picture'));
+      pl.style.alignItems='center';pl.style.marginBottom='10px';pw.appendChild(pl);
+    }
+    del.style.display=mine?'':'none';
+    go.disabled=false;go.textContent='Submit';
+  };
 }
 function open(app,rating,done,onClose){
   if(!B)return;
   var b=modal(onClose);
   if(!tok()){signin(b,app,rating);return}
-  b.textContent='Loading...';
+  var ctx={mine:null,me:{}};
+  form(b,app,rating,ctx,done); // Form shows immediately
   Promise.all([api('/api/reviews?app='+app),api('/api/me')]).then(function(r){
+    if(!b.isConnected)return; // Closed while loading
     if(!tok()||!r[1].ok){signin(b,app,rating);return}
-    form(b,app,rating,r[0].mine,r[1],done);
+    ctx.mine=r[0].mine;ctx.me=r[1];ctx.fill();
   });
 }
 function takeIntent(){
