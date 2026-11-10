@@ -3,13 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bonanto</title>
+<!--seo-->
+<title>Saswati Keyboard – Free Download for Linux | Bonanto</title>
+<meta name="description" content="Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions. Free download, version history, licence and privacy details.">
+<link rel="canonical" href="https://bonanto.github.io/apps/saswati/">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f2eee4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111713" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:site_name" content="Bonanto">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Saswati Keyboard – Free Download for Linux | Bonanto">
+<meta property="og:description" content="Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions. Free download, version history, licence and privacy details.">
+<meta property="og:url" content="https://bonanto.github.io/apps/saswati/">
+<meta property="og:image" content="https://bonanto.github.io/assets/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Bonanto: independent software for Windows and Linux">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Saswati Keyboard – Free Download for Linux | Bonanto">
+<meta name="twitter:description" content="Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions. Free download, version history, licence and privacy details.">
+<meta name="twitter:image" content="https://bonanto.github.io/assets/og.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Saswati Keyboard","description":"Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions. Saswati Keyboard is an IBus input method engine for Bengali typing on Linux.","url":"https://bonanto.github.io/apps/saswati/","applicationCategory":"UtilitiesApplication","operatingSystem":"Linux","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Bonanto","url":"https://bonanto.github.io/","jobTitle":"Independent software developer","sameAs":["https://github.com/bonanto"]},"image":"https://bonanto.github.io/assets/og.png","downloadUrl":"https://github.com/bonanto/saswati-keyboard/releases/latest","inLanguage":"en"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://bonanto.github.io/"},{"@type":"ListItem","position":2,"name":"Software","item":"https://bonanto.github.io/software.html"},{"@type":"ListItem","position":3,"name":"Saswati Keyboard","item":"https://bonanto.github.io/apps/saswati/"}]}</script>
+<!--/seo-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
-<main><div class="wrap" id="app"></div></main>
+<main><div class="wrap" id="app"><div class="crumb"><a href="/software.html">Software</a> / Saswati Keyboard</div><div style="padding-top:20px"><h1>Saswati Keyboard</h1><p class="lead">Bengali input method for Linux, packaged for Fedora KDE, openSUSE and Debian-based distributions.</p><p>Saswati Keyboard is an IBus input method engine for Bengali typing on Linux.</p><ul><li>Platforms: Linux</li><li>Price: Free</li></ul><p><a class="btn primary" href="https://github.com/bonanto/saswati-keyboard/releases/latest">Download Latest Version</a></p></div></div></main>
 <script src="/assets/config.js"></script>
 <script src="/assets/site.js"></script>
 <script src="/assets/reviews.js"></script>
@@ -100,6 +126,30 @@ BQ.apps.then(function(list){
       var lb=document.createElement('div');lb.className='lb';lb.innerHTML='<img src="'+e.target.src+'" alt="">';
       lb.onclick=function(){lb.remove()};document.body.appendChild(lb);
     };
+    var n=list.length;
+    if(n>1){
+      var cnt=document.createElement('div');cnt.className='cnt';
+      var dots=document.createElement('div');dots.className='dots';dots.setAttribute('aria-hidden','true');
+      dots.innerHTML=list.map(function(){return '<i></i>'}).join('');
+      var hint=document.createElement('div');hint.className='hint';hint.setAttribute('aria-hidden','true');hint.textContent='Swipe for more';
+      box.appendChild(cnt);box.appendChild(hint);box.appendChild(dots);
+      var figs=tr.querySelectorAll('figure'),ds=dots.children;
+      function sync(){
+        var mid=tr.scrollLeft+tr.clientWidth/2,best=1e9,c=0;
+        figs.forEach(function(f,i){var d=Math.abs(f.offsetLeft-tr.offsetLeft+f.offsetWidth/2-mid);if(d<best){best=d;c=i}});
+        cnt.textContent=(c+1)+' / '+n;
+        for(var i=0;i<ds.length;i++)ds[i].classList.toggle('on',i===c);
+        if(tr.scrollLeft>12)hint.classList.add('gone');
+      }
+      tr.addEventListener('scroll',sync,{passive:true});sync();
+      for(var i=0;i<ds.length;i++)(function(i){ds[i].onclick=function(){figs[i].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}})(i);
+      if('IntersectionObserver' in window&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)){
+        var io=new IntersectionObserver(function(es){
+          if(!es[0].isIntersecting)return;io.disconnect();
+          setTimeout(function(){if(tr.scrollLeft>4)return;tr.scrollTo({left:56,behavior:'smooth'});setTimeout(function(){if(tr.scrollLeft<=60)tr.scrollTo({left:0,behavior:'smooth'})},650)},500);
+        },{threshold:.6});io.observe(box);
+      }
+    }
     box.hidden=false;
   }
   if(a.repo)BQ.readme(a).then(function(md){return BQ.render(md,a,{k:'readme',readme:true})}).then(function(h){

@@ -18,18 +18,18 @@ function stars(host,v0,cb){
   function paint(n){bs.forEach(function(b,i){b.classList.toggle('on',i<n)})}
   for(var i=1;i<=5;i++)(function(n){
     var b=el('button','','★');b.type='button';b.setAttribute('aria-label',n+(n>1?' stars':' star'));
-    b.onmouseenter=function(){paint(n)};b.onfocus=function(){paint(n)};
+    b.onmouseenter=function(){paint(n)};b.onfocus=function(){paint(n)};b.onblur=function(){paint(val)};
     b.onclick=function(){val=n;paint(n);if(cb)cb(n)};
     bs.push(b);host.appendChild(b);
   })(i);
   host.onmouseleave=function(){paint(val)};
   paint(val);
-  return{get:function(){return val}};
+  return{get:function(){return val},set:function(n){val=n;paint(n)}};
 }
-function modal(){
+function modal(onClose){
   var m=el('div','mod'),b=el('div','box');
   m.appendChild(b);
-  function close(){m.remove();document.removeEventListener('keydown',onKey)}
+  function close(){if(!m.parentNode)return;m.remove();document.removeEventListener('keydown',onKey);if(onClose)onClose()}
   function onKey(e){if(e.key==='Escape')close()}
   m.onclick=function(e){if(e.target===m)close()};
   document.addEventListener('keydown',onKey);
@@ -120,9 +120,9 @@ function form(b,app,rating,mine,me,done){
   var cx=el('button','btn','Cancel');cx.type='button';cx.onclick=b.close;row.appendChild(cx);
   b.appendChild(row);
 }
-function open(app,rating,done){
+function open(app,rating,done,onClose){
   if(!B)return;
-  var b=modal();
+  var b=modal(onClose);
   if(!tok()){signin(b,app,rating);return}
   b.textContent='Loading...';
   Promise.all([api('/api/reviews?app='+app),api('/api/me')]).then(function(r){
@@ -141,7 +141,7 @@ function mount(a){
     api('/api/reviews?app='+a.id).then(function(j){
       if(!j||!j.ok)return;
       rate.innerHTML='';
-      var s=el('span');stars(s,j.mine?j.mine.rating:0,function(n){open(a.id,n,draw)});
+      var s=el('span'),sv=stars(s,j.mine?j.mine.rating:0,function(n){open(a.id,n,draw,function(){sv.set(j.mine?j.mine.rating:0)})});
       rate.appendChild(s);
       rate.appendChild(el('span','rt',j.count?'★ '+j.avg+' · '+j.count+(j.count>1?' reviews':' review'):'No reviews yet'));
       var b=el('button','btn sm',j.mine?'Edit':'Review');
