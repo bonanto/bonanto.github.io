@@ -100,7 +100,7 @@ function form(b,app,rating,mine,me,done){
       if(j.ok){
         b.innerHTML='';
         b.appendChild(el('h3','','Thank you'));
-        b.appendChild(el('p','sub','Your review has been submitted.'));
+        b.appendChild(el('p','sub','Your review is now live.'));
         var c=el('button','btn primary','Close');c.onclick=b.close;b.appendChild(c);
         if(done)done();
       }else{
