@@ -7,8 +7,13 @@ document.body.insertAdjacentHTML('beforeend','<footer><div class="wrap foot"><sp
 
 document.head.insertAdjacentHTML('beforeend','<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">');
 (function(){
-  var m=/^#bq=(.+)$/.exec(location.hash);
-  if(m){try{localStorage.setItem('bq_token',m[1])}catch(e){}history.replaceState(null,'',location.pathname+location.search)}
+  var m=/^#bq=([A-Za-z0-9_-]+)&n=([A-Za-z0-9_-]+)$/.exec(location.hash);
+  if(m){
+    var good=false;
+    try{good=sessionStorage.getItem('bq_nonce')===m[2];sessionStorage.removeItem('bq_nonce');if(good)localStorage.setItem('bq_token',m[1])}catch(e){good=false}
+    history.replaceState(null,'',location.pathname+location.search);
+    if(!good)setTimeout(function(){alert('Sign-in did not complete. Please try again.')},100);
+  }
   else if(/^#bqerr=/.test(location.hash)){history.replaceState(null,'',location.pathname+location.search);setTimeout(function(){alert('Sign-in did not complete. Please try again.')},100)}
 })();
 var hd=document.getElementById('hd'),bg=document.getElementById('bg');
